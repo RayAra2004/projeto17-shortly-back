@@ -46,3 +46,22 @@ export async function openUrl(req, res){
         res.status(500).send(err.message)
     }
 }
+
+export async function deleteUrl(req, res){
+    const { id } = req.params
+    const { user } = res.locals
+
+    try{
+        const urlExist = await db.query(`SELECT * FROM link WHERE id = $1;`, [id])
+
+        if(urlExist.rowCount === 0) return res.status(404).send("URL não encontrada!!")
+        if(urlExist.rows[0].fk_person_id !== user) return res.status(401).send("Você não tem permissão pra excluir esta URL!!!")
+
+        await db.query(`DELETE FROM link WHERE id = $1;`, [id])
+
+        res.sendStatus(204)
+
+    }catch(err){
+        res.status(500).send(err.message)
+    }
+}
