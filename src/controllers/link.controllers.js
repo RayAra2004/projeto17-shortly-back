@@ -22,3 +22,13 @@ export async function getUrl(req, res){
 
     res.send(url.rows[0])
 }
+
+export async function openUrl(req, res){
+    const { shortUrl } = req.params
+
+    const urlExist = await db.query(`SELECT * FROM link WHERE "shortUrl" = $1;`, [shortUrl])
+
+    if(urlExist.rowCount === 0) return res.status(404).send("URL não encotrada, verifique se está correta!!!")
+
+    res.redirect(`${urlExist.rows[0].url}`)
+}
