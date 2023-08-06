@@ -65,3 +65,37 @@ export async function deleteUrl(req, res){
         res.status(500).send(err.message)
     }
 }
+
+export async function getUser(req, res){
+
+    const { user } = res.locals
+
+    try{
+        const data = await db.query(`
+        SELECT person.id, person.name, sum(link."visitCount") as "visitCountTotal", to_json(link.*) "shortenedUrls"
+        FROM person
+        INNER JOIN link ON person.id = link.fk_person_id
+        WHERE person.id = $1
+        GROUP BY person.id, link.id
+        `, [user])
+
+        let visitCount = 0;
+
+        const shortenedUrls = data.rows.map( d => {
+            delete d.shortenedUrls.fk_person_id
+            visitCount += Number(d.visitCountTotal)
+            return d.shortenedUrls
+        })
+
+        const result = {
+            id: data.rows[0].id,
+            name: data.rows[0].name,
+            visitCount,
+            shortenedUrls
+        }
+
+        res.send(result)
+    }catch(err){
+        res.status(500).send(err.message)
+    }
+}
