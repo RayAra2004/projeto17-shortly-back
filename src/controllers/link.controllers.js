@@ -109,7 +109,7 @@ export async function ranking(req, res){
             LEFT JOIN link 
             ON person.id = link.fk_person_id
             GROUP BY person.id
-            ORDER BY "visitCount"
+            ORDER BY "visitCount" desc
             LIMIT 10 OFFSET 0;
         `)
 
