@@ -99,3 +99,28 @@ export async function getUser(req, res){
         res.status(500).send(err.message)
     }
 }
+
+export async function ranking(req, res){
+    try{
+
+        const data = await db.query(`
+            SELECT person.id, person.name, count(link.fk_person_id) as "linksCount", sum(link."visitCount") as "visitCount"
+            FROM person
+            LEFT JOIN link 
+            ON person.id = link.fk_person_id
+            GROUP BY person.id
+            ORDER BY "visitCount"
+            LIMIT 10 OFFSET 0;
+        `)
+
+        const result = data.rows.map(d => {
+            if(d.visitCount === null) d.visitCount = "0"
+            return d
+        })
+
+        res.send(result)
+
+    }catch(err){
+        res.status(500).send(err.message)
+    }
+}
