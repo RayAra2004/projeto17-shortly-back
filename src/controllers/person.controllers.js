@@ -8,7 +8,7 @@ export async function signUp(req, res){
     if(password.trim() !== confirmPassword.trim()) return res.status(422).send("O campo senha e confirmar senha devem  ser iguais");
     try{
         const encriptedPassword = bcrypt.hashSync(password.trim(), 10)
-        createPerson(name, email, encriptedPassword)
+        await createPerson(name, email, encriptedPassword)
         res.sendStatus(201)
     }catch(err){
         if(err.code === "23505") return res.status(409).send("Email já cadastrado no sistema!!!")
@@ -28,7 +28,7 @@ export async function signIn(req, res){
 
         const token = uuid()
 
-        createSession(token, user)
+        await createSession(token, user)
 
         res.send({token})
 
