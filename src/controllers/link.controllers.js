@@ -57,7 +57,7 @@ export async function deleteUrl(req, res){
         if(urlExist.rowCount === 0) return res.status(404).send("URL não encontrada!!")
         if(urlExist.rows[0].fk_person_id !== user) return res.status(401).send("Você não tem permissão pra excluir esta URL!!!")
 
-        deleteUrlById()
+        deleteUrlById(id)
 
         res.sendStatus(204)
 
