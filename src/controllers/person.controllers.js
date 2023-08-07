@@ -1,6 +1,6 @@
-import { db } from "../database/database.connection.js";
 import bcrypt from "bcrypt";
 import {v4 as uuid} from "uuid";
+import { createPerson, createSession, getUserByEmail } from "../repositories/person.repository.js";
 
 export async function signUp(req, res){
     const {name, email, password, confirmPassword} = req.body;
@@ -8,8 +8,7 @@ export async function signUp(req, res){
     if(password.trim() !== confirmPassword.trim()) return res.status(422).send("O campo senha e confirmar senha devem  ser iguais");
     try{
         const encriptedPassword = bcrypt.hashSync(password.trim(), 10)
-        await db.query("INSERT INTO person (name, email, password) VALUES($1, $2, $3);", [name.trim(), email.trim(), encriptedPassword])
-
+        createPerson(name, email, encriptedPassword)
         res.sendStatus(201)
     }catch(err){
         if(err.code === "23505") return res.status(409).send("Email já cadastrado no sistema!!!")
@@ -21,7 +20,7 @@ export async function signIn(req, res){
     const {email, password} = req.body;
 
     try{
-        const user = await db.query(`SELECT * FROM person WHERE email = $1;`, [email.trim()])
+        const user = await getUserByEmail(email)
 
         if(user.rowCount === 0)return res.status(401).send("Email não cadastrado no sistema!!")
 
@@ -29,7 +28,7 @@ export async function signIn(req, res){
 
         const token = uuid()
 
-        await db.query(`INSERT INTO session (token, fk_person_id) VALUES($1, $2);`, [token, user.rows[0].id])
+        createSession(token, user)
 
         res.send({token})
 
